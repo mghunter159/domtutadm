@@ -3,6 +3,6 @@
 $host = 'localhost'; // адрес сервера 
 $database = 'control'; // имя базы данных
 $user = 'root'; // имя пользователя
-$password = 'SZ4F4Zm0reop'; // пароль
+$password = ''; // пароль
 
 ?>
