@@ -1,0 +1,27 @@
+php_value error_reporting -1
+php_flag display_errors on
+php_flag display_startup_errors on
+
+php_flag ignore_repeated_source off
+php_flag ignore_repeated_errors off
+
+php_flag track_errors on
+
+php_flag log_errors on
+
+php_flag mysql.trace_mode on
+
+php_value memory_limit 512M
+
+AddDefaultCharset utf-8
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^.*$ $0.php [L,QSA]
+RewriteCond %{THE_REQUEST} ([^\s]*)\.php(\?[^\s]*)?
+RewriteRule (.*) %1 [R=301,L]
+RewriteRule ^page/(.+)$ http://admin.block-home.ru/$1 [R=301,L]
+
+ErrorDocument 404 http://admin.block-home.ru/404.php

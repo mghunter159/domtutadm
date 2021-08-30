@@ -1,0 +1,345 @@
+<?php 
+		require_once '../../connection.php';		
+		if(!isset($_SESSION["session_username"])):
+		header("location:/login.php");
+		else:
+?>
+<?php 
+$title = "Список заказов";
+include("../header.php"); ?>
+<?php
+
+	include("../proverka.php");
+	if ($permissionresult == 2)
+	
+	{
+?>
+<?php include("../menu.php"); ?>
+
+
+<div class="container-fluid mt-3" style="padding-top:70px;">
+<h1 class="text-center">Список заказов</h1>
+
+<?php
+
+$query ="SELECT * FROM client";
+
+
+$result = mysqli_query($link, $query) or die("Ошибка " . mysqli_error($link)); 
+$rows = mysqli_num_rows($result); // количество полученных строк
+ //Получаем данные
+  $sql = mysqli_query($link, 'SELECT * FROM `client`');
+  while ($result = mysqli_fetch_array($sql)) {
+	$rows = $result['kod_client'];
+  }
+  
+
+  //Если переменная Name передана
+    if (isset($_POST["redpost"])) {
+      //Если это запрос на обновление, то обновляем
+	  
+	    if (isset($_GET['pic'])){
+
+	extract($_POST);
+    $error=array();
+    $extension=array("jpeg","jpg","png","JPG","JPEG");
+    $extension2=array("mp4","avi");
+	
+	$sql1 = mysqli_query($link, "SELECT * FROM `fullzakaz` WHERE `id`={$_GET['pic']}");
+    $product = mysqli_fetch_array($sql1);
+	
+    foreach($_FILES["files"]["tmp_name"] as $key=>$tmp_name)
+	
+            {
+                $file_name=$_FILES["files"]["name"][$key];
+                $file_tmp=$_FILES["files"]["tmp_name"][$key];
+                $ext=pathinfo($file_name,PATHINFO_EXTENSION);
+				$id = isset($_GET['pic']) ? $product['id'] : '';
+				$full_name = $_SESSION['session_username'];
+				$rand1=rand(0,1000);
+				
+                if(in_array($ext,$extension))
+                {
+                    if(!file_exists("../../photo_gallery/".$file_name))
+						
+                    { 
+						$dir = scandir("../../photo_gallery/".$id);
+						if ($dir == true)
+						{
+							$newFileName="id".$id."_".date("dmY_H_ia")."_upl_".$full_name."_".$rand1.".".$ext;
+								/*--------------------------------------*/
+									// получаем полезные данные о картинке и водяном знаке
+										$image_info = getimagesize($file_tmp);
+										$watermark_info = getimagesize('../../img/watemark.png');
+  
+									// определяем MIME-тип изображения, для выбора соответствующей функции
+										$format = strtolower(substr($image_info['mime'], 
+										strpos($image_info['mime'], '/') + 1));
+  
+									// определяем названия функция для создания и сохранения картинки
+										$im_cr_func = "imagecreatefrom" . $format;
+										$im_save_func = "image" . $format;
+  
+									// загружаем изображение в php
+										$img = $im_cr_func($file_tmp);
+  
+									// загружаем в php наш водяной знак
+										$watermark = imagecreatefrompng('../../img/watemark.png');
+  
+									// определяем координаты левого верхнего угла водяного знака
+										$pos_x = ($image_info[0] - $watermark_info[0]) / 2; 
+										$pos_y = ($image_info[1] - $watermark_info[1]) / 2; 
+  
+									// помещаем водяной знак на изображение
+										imagecopy($img, $watermark, $pos_x, $pos_y, 0, 0, $watermark_info[0], 
+										$watermark_info[1]);
+  
+									// сохраняем изображение с уникальным именем
+										$im_save_func($img, '../../photo_gallery/'.$id.'/'.$newFileName);
+								/*--------------------------------------*/
+							//move_uploaded_file($file_tmp=$_FILES["files"]["tmp_name"][$key],"../../photo_gallery/".$id."/".$newFileName);
+							
+							$uplqury = "INSERT INTO `picture` (`id_zakaz`, `pic`) VALUES ('{$id}', '{$newFileName}')";
+							$sqlupl = mysqli_query($link, $uplqury);
+							
+						}
+						else
+						{
+							mkdir("../../photo_gallery/".$id, 0777, true);
+							$newFileName="id".$id."_".date("dmY_H_ia")."_upl_".$full_name."_".$rand1.".".$ext;
+								/*--------------------------------------*/
+									// получаем полезные данные о картинке и водяном знаке
+										$image_info = getimagesize($file_tmp);
+										$watermark_info = getimagesize('../../img/watemark.png');
+  
+									// определяем MIME-тип изображения, для выбора соответствующей функции
+										$format = strtolower(substr($image_info['mime'], 
+										strpos($image_info['mime'], '/') + 1));
+  
+									// определяем названия функция для создания и сохранения картинки
+										$im_cr_func = "imagecreatefrom" . $format;
+										$im_save_func = "image" . $format;
+  
+									// загружаем изображение в php
+										$img = $im_cr_func($file_tmp);
+  
+									// загружаем в php наш водяной знак
+										$watermark = imagecreatefrompng('../../img/watemark.png');
+  
+									// определяем координаты левого верхнего угла водяного знака
+										$pos_x = ($image_info[0] - $watermark_info[0]) / 2; 
+										$pos_y = ($image_info[1] - $watermark_info[1]) / 2; 
+  
+									// помещаем водяной знак на изображение
+										imagecopy($img, $watermark, $pos_x, $pos_y, 0, 0, $watermark_info[0], 
+										$watermark_info[1]);
+  
+									// сохраняем изображение с уникальным именем
+										$im_save_func($img, '../../photo_gallery/'.$id.'/'.$newFileName);
+								/*--------------------------------------*/
+							//move_uploaded_file($file_tmp=$_FILES["files"]["tmp_name"][$key],"../../photo_gallery/".$id."/".$newFileName);
+							
+							$uplqury = "INSERT INTO `picture` (`id_zakaz`, `pic`) VALUES ('{$id}', '{$newFileName}')";
+							$sqlupl = mysqli_query($link, $uplqury);
+						}
+						      if ($sqlupl) {
+											echo"
+												<div class='blockbackdrop'>
+												<div class='alert alert-success text-center fixed-bottom shadow-lg p-4 mb-4' style='animation-fill-mode: forwards; animation: show 1s 1;'>
+												<strong>Успешно!</strong> Вы добавили фото к заказу!</div></div>
+													<script>
+														setTimeout(function() { location.replace('/work/actions/orderlist') }, 1600);
+													</script>";
+											} 
+								else {
+									echo '<p>Произошла ошибка: ' . mysqli_error($link) . '</p>';
+									}
+                    }
+					else
+                    {
+						echo "  <div class='alert alert-danger'>
+						<strong>Внимение!</strong> Произошла неизвестная ошибка при загрузке файла. Обратитесь к Администратору.</div>";
+                    }
+                }
+				if(in_array($ext,$extension2))
+                {
+                    if(!file_exists("../../video_gallery/".$file_name))
+						
+                    { 
+						$dir = scandir("../../video_gallery/".$id);
+						if ($dir == true)
+						{
+							$newFileName="id".$id."_".date("dmY_H_ia")."_upl_".$full_name."_".$rand1.".".$ext;
+							move_uploaded_file($file_tmp=$_FILES["files"]["tmp_name"][$key],"../../video_gallery/".$id."/".$newFileName);
+							
+							$uplqury = "INSERT INTO `video` (`id_zakaz`, `video`) VALUES ('{$id}', '{$newFileName}')";
+							$sqlupl = mysqli_query($link, $uplqury);
+							
+						}
+						else
+						{
+							mkdir("../../video_gallery/".$id, 0700, true);
+							$newFileName="id".$id."_".date("dmY_H_ia")."_upl_".$full_name."_".$rand1.".".$ext;
+							move_uploaded_file($file_tmp=$_FILES["files"]["tmp_name"][$key],"../../video_gallery/".$id."/".$newFileName);
+							
+							$uplqury = "INSERT INTO `video` (`id_zakaz`, `video`) VALUES ('{$id}', '{$newFileName}')";
+							$sqlupl = mysqli_query($link, $uplqury);
+						}
+						      if ($sqlupl) {
+											echo"
+												<div class='blockbackdrop'>
+												<div class='alert alert-success text-center fixed-bottom shadow-lg p-4 mb-4' style='animation-fill-mode: forwards; animation: show 1s 1;'>
+												<strong>Успешно!</strong> Вы добавили видео к заказу!</div></div>
+													<script>
+														setTimeout(function() { location.replace('/admin/actions/orderlist') }, 1600);
+													</script>";
+											} 
+								else {
+									echo '<p>Произошла ошибка: ' . mysqli_error($link) . '</p>';
+									}
+                    }
+					else
+                    {
+						echo "  <div class='alert alert-danger'>
+						<strong>Внимение!</strong> Произошла неизвестная ошибка при загрузке файла. Обратитесь к Администратору.</div>";
+                    }
+                }
+                if (!(in_array($ext,$extension2)) and !(in_array($ext,$extension)))
+                {
+					echo "  <div class='alert alert-danger'>
+    <strong>Внимение!</strong> Неправильный формат загружаемого файла! Разрешенные форматы: jpeg, jpg, png, mp4, avi, JPG и JPEG.</div>";
+                    array_push($error,"$file_name, ");
+                }
+            }
+}
+
+      
+
+    }
+    if (isset($_GET['pic'])) {
+				$sql = mysqli_query($link, "SELECT * FROM `fullzakaz` WHERE `id`={$_GET['pic']}");
+      $product = mysqli_fetch_array($sql);
+echo "<div class='jumbotron' style='padding-top: 10px;padding-bottom: 33px;background-color: #cccccc;'>
+		<h2><span class='badge badge-secondary'>Добавление фото или видео к заказу</span></h2>
+	<form form method='post' enctype='multipart/form-data'>";
+	echo "			<div class='form-group'>
+				<label for='usr'> <p class='font-weight-bold' style='margin-bottom: 0px;'>Код заказа:</p>
+					<input disabled class='input form-control' id='id' name='id' type='text' size='50'  value='" , isset($_GET['pic']) ? $product['id'] : '' , "'>
+				</label>
+			</div>
+		
+		
+			<div class='form-group'>
+				<label for='usr'> <p class='font-weight-bold' style='margin-bottom: 0px;'>Клиент:</p>
+					<input disabled class='input form-control' id='id' name='id' type='text' size='50'  value='" , isset($_GET['pic']) ? $product['kod_client'] : '' , "'>
+				</label>
+			</div><div id='preview'></div>
+<input type='file' name='files[]' multiple ><br>
+
+";
+
+	 echo  "
+	 <div class='form-group' style='padding-top: 24px;'><input class='btn btn-success float-left' id='redpost' name= 'redpost' type='submit' value='Добавить!'>
+		<input readonly class='btn btn-danger float-left' id='closebutton' style='margin-left: 15px;width: 110px;' value='Отменить!'>
+	<script language='javascript'>
+    document.getElementById('closebutton').onclick = function() 
+	{
+     location.replace('/work/actions/orderlist')
+	 }
+	</script>
+	</div>";
+  echo "</form>
+  </div>
+"; }
+
+
+ ?> 
+
+  <?php
+
+$sql11 = "SELECT * FROM fullzakaz";
+$result = $link->query($sql11);
+$arr_users = [];
+if ($result->num_rows > 0) {
+    $arr_users = $result->fetch_all(MYSQLI_ASSOC);
+}
+?>
+<div class="table-one">
+        <table id="usetTable" class="table table-striped table-bordered">
+            <thead>
+				<th></th>
+				<th>Ид заказа</th>
+				<th>Клиент</th>
+				<th>Дата</th>
+				<th style="width: 100px;">Адрес</th>
+				<th>Тип</th>
+				<th>Материал</th>
+				<th>Размер м</th>
+				<th>Площадь кв/м2</th>
+				<th>Мансарда</th>
+				<th>Цоколь</th>
+				<th>Фундамент</th>
+				<th>Тип крыши</th>
+				<th>Покрытие крыши</th>
+				<th>Внешняя отделка</th>
+				<th>Утепление</th>
+				<th>Статус</th>
+            </thead>
+            <tbody>
+                <?php if(!empty($arr_users)) { ?>
+                    <?php foreach($arr_users as $user) { ?>
+                        <tr>
+							<td class="text-center" style="padding-bottom: 0px;"> 
+								<p>
+									<a href="?pic=<?php echo $user['id'];?>" style="display: block;"data-toggle="tooltip" title="Добавить фото" >
+									<input type="image" src="/img/actions/addpicture.png" style="height: 25px;;"/>
+									</a>
+								</p>
+							</td> 
+                            <td><?php echo $user['id']; ?><br> №Заказа: <?php echo $user['number'];?> </td>
+                            <td><?php echo $user['kod_client']; ?></td>
+                            <td><?php echo $user['date']; ?></td>
+							<td><?php echo $user['adres']; ?></td>
+                            <td><?php echo $user['type']; ?></td>
+							<td><?php echo $user['type_material']; ?></td>
+                            <td><?php echo $user['type_size']; ?></td>
+                            <td><?php echo $user['square']; ?></td>
+                            <td><?php echo $user['mansarda']; ?></td>
+							<td><?php echo $user['tsokol']; ?></td>			
+                            <td><?php echo $user['fundament']; ?></td>
+                            <td><?php echo $user['type_roof']; ?></td>
+                            <td><?php echo $user['pokrytie_roof']; ?></td>
+							<td><?php echo $user['vneshnya_otdelka']; ?></td>
+                            <td><?php echo $user['yteplenie']; ?></td>
+                            <td><?php echo $user['status']; ?></td>								
+
+                        </tr>
+                    <?php } ?>
+                <?php } ?>
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>	
+    <script>
+        $(document).ready(function() {
+            $('#usetTable').DataTable({
+				"language": {
+					"url": "//cdn.datatables.net/plug-ins/1.10.19/i18n/Russian.json"
+				}			
+			});
+        } );
+    </script>
+	
+</div>
+<?php include("../footer.php"); ?>
+	<?php }
+	else {
+	 		echo "<script language='javascript'>
+     location.replace('/error')
+	</script>";
+	}
+?>
+<?php endif; ?>
